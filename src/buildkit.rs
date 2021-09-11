@@ -106,7 +106,7 @@ impl<Compiler: CompileStep,Linker: LinkStep> BuildSystem<Compiler,Linker> {
     /// Returns a path to the final product.
     pub fn build(settings: &BuildSettings) -> PathBuf {
         let source_files = settings.source_strategy.resolve::<Compiler>();
-
+        if source_files.is_empty() { panic!("Nothing to compile!") }
         //todo: multithread this?
         //todo: Incremental compiles?
         //create intermediate path if it does not exist
@@ -125,9 +125,34 @@ impl<Compiler: CompileStep,Linker: LinkStep> BuildSystem<Compiler,Linker> {
     }
 
     ///Build using no special settings.  Usually the entrypoint from `build.rs`
-    pub fn build_rs() -> PathBuf {
-        let settings = BuildSettingsBuilder::new().finish();
+    pub fn build_rs(exe_path: PathBuf) -> PathBuf {
+        let settings = BuildSettingsBuilder::new().product_path(PathType::EXERelative(exe_path)).finish();
         Self::build(&settings)
+    }
+}
+
+#[non_exhaustive]
+#[derive(Clone)]
+pub enum PathType {
+    ///Path will take on some path relative to exe in target directory as part of a build process
+    EXERelative(PathBuf),
+    ///Path will be as specified
+    Exact(PathBuf),
+}
+impl PathType {
+    fn path(&self) -> PathBuf {
+        match self {
+            PathType::EXERelative(relative) => {
+                let out_dir = std::env::var("OUT_DIR").expect("Must set `OUT_DIR` if not setting product_path or using PathType::EXERelative");
+                let mut product_path = PathBuf::from_str(&out_dir).unwrap();
+                product_path.pop(); //out
+                product_path.pop(); //target_name
+                product_path.pop(); //'build'
+                product_path.push(relative);
+                product_path
+            }
+            PathType::Exact(exact) => exact.to_path_buf(),
+        }
     }
 }
 
@@ -139,7 +164,7 @@ pub struct BuildSettingsBuilder{
     ///Will scan this path for sourcefiles
     source_strategy: Option<SourceFileStrategy>,
     intermediate_path: Option<PathBuf>,
-    product_path: Option<PathBuf>,
+    product_path: Option<PathType>,
     configuration: Option<Configuration>,
     //todo: Allow other types to be set
 }
@@ -161,7 +186,8 @@ impl BuildSettingsBuilder {
         self.intermediate_path = Some(path);
         self
     }
-    pub fn product_path(&mut self, path: PathBuf) -> &mut BuildSettingsBuilder {
+    ///Specify where products are stored
+    pub fn product_path(&mut self, path: PathType) -> &mut BuildSettingsBuilder {
         self.product_path = Some(path);
         self
     }
@@ -181,19 +207,10 @@ impl BuildSettingsBuilder {
             }
         };
 
-        let product_path = match &self.product_path {
-            Some(path) => path.clone(),
+        let product_path: PathBuf = match &self.product_path {
+            Some(path) => path.path().to_path_buf(),
             None => {
-                //The `OUT_DIR`, while fine for intermediates, is generally
-                // not acceptable for finding the file at runtime.  See
-                // https://github.com/rust-lang/cargo/issues/5457 for a discussion.
-                //OUT_DIR has a path like `/Users/drew/Code/winspike/target/debug/build/macspike-397a93970bb251e7/out`
-                let out_dir = std::env::var("OUT_DIR").expect("Must set `OUT_DIR` environment variable or call .product_path()");
-                let mut product_path = PathBuf::from_str(&out_dir).unwrap();
-                product_path.pop(); //out
-                product_path.pop(); //target_name
-                product_path.pop(); //'build'
-                product_path
+                PathType::EXERelative(PathBuf::new()).path().to_path_buf()
             }
         };
 

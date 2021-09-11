@@ -8,6 +8,10 @@ pub struct MetalLinker {
 }
 impl LinkStep for MetalLinker {
     fn link_all(object_files: &[PathBuf], out_dir: &Path, lib_name: &str, configuration: &Configuration) -> PathBuf {
+        //create path if needed
+        if !out_dir.exists() {
+            std::fs::create_dir_all(out_dir).unwrap();
+        }
         let mut metallib_file = out_dir.to_owned();
         let metallib_nameonly = format!("{}.metallib",lib_name);
         metallib_file.push(metallib_nameonly);

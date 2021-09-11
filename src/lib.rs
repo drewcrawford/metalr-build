@@ -12,6 +12,8 @@ pub type BuildSystem = buildkit::BuildSystem<compile::MetalCompiler,link::MetalL
 
 #[test]
 fn t_build() {
+    use crate::buildkit::PathType;
+
     use std::env::temp_dir;
     let mut intermediate_path = temp_dir();
     intermediate_path.push("t_build");
@@ -21,7 +23,7 @@ fn t_build() {
     settings
         .source_strategy(SourceFileStrategy::SearchFromManifest("tests/".to_string()))
         .intermediate_path(intermediate_path.clone())
-        .product_path(intermediate_path);
+        .product_path(PathType::Exact(intermediate_path));
 
     let mut debug_settings = settings.clone();
     debug_settings.configuration(Configuration::Debug);

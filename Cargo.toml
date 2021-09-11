@@ -1,5 +1,5 @@
 [package]
-name = "metal-build"
+name = "metalr-build"
 version = "0.1.0"
 authors = ["Drew Crawford <drew@sealedabstract.com>"]
 edition = "2018"
