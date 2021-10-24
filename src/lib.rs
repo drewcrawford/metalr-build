@@ -1,8 +1,6 @@
 
-mod dependency_parser;
 mod compile;
 mod link;
-mod buildkit;
 
 pub use buildkit::{BuildSettingsBuilder,SourceFileStrategy,Configuration,BuildSettings};
 
@@ -12,7 +10,7 @@ pub type BuildSystem = buildkit::BuildSystem<compile::MetalCompiler,link::MetalL
 
 #[test]
 fn t_build() {
-    use crate::buildkit::PathType;
+    use buildkit::PathType;
 
     use std::env::temp_dir;
     let mut intermediate_path = temp_dir();

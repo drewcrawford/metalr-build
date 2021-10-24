@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::buildkit::{Configuration,CompileStep};
+use buildkit::{Configuration, CompileStep};
 
 pub struct MetalCompiler;
 

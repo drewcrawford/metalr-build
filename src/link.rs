@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::buildkit::{Configuration, LinkStep};
+use buildkit::{Configuration, LinkStep};
 
 pub struct MetalLinker {
 
