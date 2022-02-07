@@ -19,17 +19,19 @@ impl CompileStep for MetalCompiler {
         let compile_1 = cmd.arg("-sdk").arg("macosx")    //sdk
             .arg("metal")
             .arg("-c")                      //compile
-            .args(&["-target","air64-apple-macos11.3"]); //deployment target?
+            .args(&["-target","air64-apple-macos12.1"]); //deployment target?
         match configuration {
             Configuration::Debug => {
-                compile_1.arg("-gline-tables-only");
+                compile_1.arg("-gline-tables-only") //"Emit debug line number tables only"
+                    .arg("-MO") //"Embed sources and driver options into output"
+
+                ;
             }
             Configuration::Release => (),
         };
 
-        let compile_output = compile_1.arg("-gline-tables-only")                 //"Emit debug line number tables only"
-            .arg("-MO")              //"Embed sources and driver options into output"
-            //-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk
+        let compile_output = compile_1
+            //-isysroot-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk
             .arg("-ffast-math") //Allow aggressive, lossy floating-point optimizations
             //-serialize-diagnostics <file>
             .args(&["-o",new_file.to_str().unwrap()])
@@ -37,7 +39,7 @@ impl CompileStep for MetalCompiler {
             .arg("-MMD") //write a depfile containing user headers
             .args(&["-MT",file_with_extension.to_str().unwrap()]) //Specify name of main file output in depfile
             .args(&["-MF",dependency_path.to_str().unwrap()]) //Write depfile output from -MMD, -MD, -MM, or -M to <file>
-            .arg(path)
+            .arg(path) //input file
             .stdout(Stdio::piped()).stderr(Stdio::piped())
             .spawn().unwrap().wait_with_output().unwrap();
         if !compile_output.status.success() {

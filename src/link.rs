@@ -19,7 +19,7 @@ impl LinkStep for MetalLinker {
         cmd
             .arg("-sdk").arg("macosx")
             .arg("metal")
-            .args(&["-target","air64-apple-macos11.3"]); //deployment target
+            .args(&["-target","air64-apple-macos12.1"]); //deployment target
         match configuration {
             Configuration::Debug => {
                 cmd.arg("-MO"); //"Embed sources and driver options into output"
