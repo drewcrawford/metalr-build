@@ -23,9 +23,11 @@ impl LinkStep for MetalLinker {
         match configuration {
             Configuration::Debug => {
                 cmd.arg("-MO"); //"Embed sources and driver options into output"
+                println!("compiling for debug!")
             }
             Configuration::Release => ()
         }
+        println!("here!");
         let link_output = cmd.args(&["-o",metallib_file.to_str().unwrap()])
             .args(object_files)
             .stdout(Stdio::piped()).stderr(Stdio::piped())

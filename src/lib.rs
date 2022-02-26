@@ -21,21 +21,23 @@ metalr-build plays well with
 mod compile;
 mod link;
 
-pub use buildkit::{BuildSettingsBuilder,SourceFileStrategy,Configuration,BuildSettings};
+
+pub use buildkit::{BuildSettingsBuilder, SourceFileStrategy, Configuration, BuildSettings};
 
 pub type BuildSystem = buildkit::BuildSystem<compile::MetalCompiler,link::MetalLinker>;
 
 #[test]
 fn t_build() {
     use buildkit::PathType;
-
+    use std::path::PathBuf;
+    use std::str::FromStr;
     use std::env::temp_dir;
     let mut intermediate_path = temp_dir();
     intermediate_path.push("t_build");
     use buildkit::CompileSettingsBuilder;
     let mut compile_settings = CompileSettingsBuilder::new();
     compile_settings
-        .source_strategy(SourceFileStrategy::SearchFromManifest("tests/".to_string()))
+        .source_strategy(SourceFileStrategy::SearchFromManifest(vec![PathBuf::from_str("tests/").unwrap()]))
         .intermediate_path(PathType::Exact(intermediate_path.clone()));
 
     let mut settings = BuildSettingsBuilder::new();
