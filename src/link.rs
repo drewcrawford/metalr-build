@@ -27,7 +27,6 @@ impl LinkStep for MetalLinker {
             }
             Configuration::Release => ()
         }
-        println!("here!");
         let link_output = cmd.args(&["-o",metallib_file.to_str().unwrap()])
             .args(object_files)
             .stdout(Stdio::piped()).stderr(Stdio::piped())

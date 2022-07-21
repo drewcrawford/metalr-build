@@ -8,7 +8,7 @@ pub struct MetalCompiler;
 impl CompileStep for MetalCompiler {
     const SOURCE_FILE_EXTENSION: &'static str = "metal";
 
-    fn compile_one<'a>(path: &Path, intermediate_dir: &Path, configuration: &Configuration, dependency_path: &Path,flags: impl Iterator<Item=&'a String>) -> PathBuf {
+    fn compile_one<'a>(path: &Path, intermediate_dir: &Path, configuration: &Configuration, dependency_path: &Path,flags: impl Iterator<Item=&'a str>) -> PathBuf {
         let file_with_extension = path.file_name().unwrap();
         let file_base_name = path.file_stem().unwrap();
         let mut new_name = file_base_name.to_owned();
