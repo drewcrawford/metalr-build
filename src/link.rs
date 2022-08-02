@@ -23,7 +23,6 @@ impl LinkStep for MetalLinker {
         match configuration {
             Configuration::Debug => {
                 cmd.arg("-MO"); //"Embed sources and driver options into output"
-                println!("compiling for debug!")
             }
             Configuration::Release => ()
         }
@@ -31,16 +30,19 @@ impl LinkStep for MetalLinker {
             .args(object_files)
             .stdout(Stdio::piped()).stderr(Stdio::piped())
             .spawn().unwrap().wait_with_output().unwrap();
+        let output = String::from_utf8(link_output.stdout).unwrap();
+        for line in output.lines() {
+            println!("{line}");
+        }
+        let err = String::from_utf8(link_output.stderr).unwrap();
+        for line in err.lines() {
+            if line.contains("warning:") {
+                println!("cargo:warning={line}");
+            }
+            eprintln!("{line}")
+        }
         if !link_output.status.success() {
-            panic!(
-                r#"
-Metal linker reported an error.
-stdout: {}
-stderr: {}
-"#,
-                String::from_utf8(link_output.stdout).unwrap(),
-                String::from_utf8(link_output.stderr).unwrap()
-            );
+            panic!("Metal linker reported an error.");
         }
         metallib_file
     }

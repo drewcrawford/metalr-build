@@ -19,7 +19,7 @@ impl CompileStep for MetalCompiler {
         let compile_1 = cmd.arg("-sdk").arg("macosx")    //sdk
             .arg("metal")
             .arg("-c")                      //compile
-            .args(&["-target","air64-apple-macos12.1"]); //deployment target?
+            .args(&["-target","air64-apple-macos12.4"]); //deployment target?
         match configuration {
             Configuration::Debug => {
                 compile_1.arg("-gline-tables-only") //"Emit debug line number tables only"
@@ -47,17 +47,21 @@ impl CompileStep for MetalCompiler {
             .arg(path) //input file
             .stdout(Stdio::piped()).stderr(Stdio::piped())
             .spawn().unwrap().wait_with_output().unwrap();
-        if !compile_output.status.success() {
-            panic!(
-                r#"
-Metal compiler reported an error.
-stdout: {}
-stderr: {}
-"#,
-                String::from_utf8(compile_output.stdout).unwrap(),
-                String::from_utf8(compile_output.stderr).unwrap()
-            );
+        let output = String::from_utf8(compile_output.stdout).unwrap();
+        for line in output.lines() {
+            println!("{line}");
         }
+        let err = String::from_utf8(compile_output.stderr).unwrap();
+        for line in err.lines() {
+            if line.contains("warning:") {
+                println!("cargo:warning={line}");
+            }
+            eprintln!("{line}")
+        }
+        if !compile_output.status.success() {
+            panic!("Metal compiler reported an error.");
+        }
+
         new_file
     }
 }
